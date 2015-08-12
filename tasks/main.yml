@@ -1,0 +1,31 @@
+---
+
+- include_vars: "{{ item }}"
+  with_items:
+    - "{{ ansible_distribution }}.yml"
+    - "{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
+
+- include: install.yml
+  tags:
+    - postgresql
+    - postgresql-install
+
+- include: configure.yml
+  tags:
+    - postgresql
+    - postgresql-configure
+
+- include: users.yml
+  tags:
+    - postgresql
+    - postgresql-users
+
+- include: databases.yml
+  tags:
+    - postgresql
+    - postgresql-databases
+
+- include: users_privileges.yml
+  tags:
+    - postgresql
+    - postgresql-users

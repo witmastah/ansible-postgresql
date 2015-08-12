@@ -1,0 +1,33 @@
+---
+
+- name: Ensure that PostgreSQL process or service is running
+  service:
+    name: postgresql
+    state: started
+  sudo: yes
+
+- name: Create the provided PostgreSQL databases
+  postgresql_db:
+    name: "{{ item.name }}"
+    owner: "{{ postgresql_database_owner }}"
+    encoding: "{{ postgresql_encoding }}"
+    lc_collate: "{{ postgresql_locale }}"
+    lc_ctype: "{{ postgresql_locale }}"
+    port: "{{ postgresql_port }}"
+    template: "template0"
+    state: present
+    login_user: "{{ postgresql_admin_role }}"
+  sudo: yes
+  sudo_user: "{{ postgresql_admin_role }}"
+  with_items: postgresql_databases
+  when: postgresql_databases|length > 0
+
+- name: Add the adminpack extension to the PostgreSQL databases
+  sudo: yes
+  sudo_user: "{{ postgresql_service_user }}"
+  shell: "psql {{ item.name }} --username {{ postgresql_admin_role }} -c 'CREATE EXTENSION IF NOT EXISTS adminpack;'"
+  with_items: postgresql_databases
+  register: adminpack_ext_result
+  failed_when: adminpack.rc != 0 and ("already exists, skipping" not in adminpack.stderr)
+  changed_when: adminpack.rc == 0 and ("already exists, skipping" not in adminpack.stderr)
+  when: item.adminpack is defined and item.adminpack

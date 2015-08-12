@@ -1,0 +1,54 @@
+---
+- name: Install PostgreSQL
+  apt: pkg={{ item }}
+       state=installed
+       update_cache=yes
+       cache_valid_time=3600
+  sudo: True
+  with_items:
+   - python-psycopg2
+   - postgresql-9.4
+   - postgresql-contrib-9.4
+   - python-psycopg2
+   - libpq-dev
+  notify:
+   - Start Pgsql
+- name: Add PostgreSQL Configuration - postgresql.conf
+  copy: src=postgresql.conf
+        dest=/etc/postgresql/9.4/main/postgresql.conf
+        owner=postgres
+        group=postgres
+        mode=0644
+  sudo: True
+- name: Add PostgreSQL Security Configuration - pg_hba.conf
+  copy: src=pg_hba.conf
+        dest=/etc/postgresql/9.4/main/pg_hba.conf
+        owner=postgres
+        group=postgres
+        mode=0644
+  sudo: True
+  notify:
+   - Restart Pgsql
+  sudo: True
+- name: Add Application User
+  postgresql_user: name="{{ username }}"
+                   password="{{ password }}"
+                   encrypted=False
+                   role_attr_flags='NOSUPERUSER,INHERIT,NOCREATEDB,NOCREATEROLE,NOREPLICATION'
+                   state=present
+  sudo: yes
+  sudo_user: postgres
+- name: Add Application Database
+  postgresql_db: name="{{ database }}"
+                 login_user=postgres
+                 encoding="UTF8"
+                 lc_collate="{{ locale }}"
+                 lc_ctype="{{ locale }}"
+                 owner="{{ username }}"
+                 template=template0
+                 state=present
+  sudo: yes
+  sudo_user: postgres
+  notify:
+   - Restart Pgsql
+  sudo: True

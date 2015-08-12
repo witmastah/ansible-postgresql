@@ -1,0 +1,17 @@
+---
+
+galaxy_info:
+  author: witmastah
+  company: EMKA IT
+  description: "Ansible role for installing and initializing a PostgreSQL 9.x"
+  min_ansible_version: 1.9
+  platforms:
+  - name: Debian
+    versions:
+    - 8.1
+  categories:
+  - database
+  - database:sql
+  - development
+
+dependencies: []
